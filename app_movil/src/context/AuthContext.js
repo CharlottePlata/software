@@ -111,12 +111,12 @@ export function AuthProvider({ children }) {
      * simplicar el acceso al contexto y lanza un error descriptivo si se usa fuera del arbol del provider
      */
 
-    export function useAuth(){
-        const context = useContext(AuthContext);
+export function useAuth(){
+    const context = useContext(AuthContext);
 
-        if(!context){
-            throw new Error('useAuth must be used within an authProvider');
-        }
-        return context;
+    if(!context){
+        throw new Error('useAuth must be used within an authProvider');
     }
+    return context;
+}
 
