@@ -1,8 +1,29 @@
 /**
- * 
+ * modifica el manejo del carrito para dos escenarios
+ * usuario sin sesion carrito local asyncStorage
+ * usuario autenticado carrito persisitido en el bakckend
+ * tambien normaliza la estrutura de items y calcula totales para el contexto consuma siempre un formato consistente
  */
 
-import apiClient from "../api/apiClient";
+import apiClient from '../api/apiClient';
+import { STORAGE_KEYS } from '../utils/constants';
+import { storageGetItem, storageSetItem } from '../utils/storage';
+
+// lee el carrito guardado localmente. si no existe o esta corrupto devuelve
+
+async function readLocalCart() {
+    const raw= await storageGetItem(STORAGE_KEYS.carritoLocal);
+    if (!raw) {
+        return [];
+    }
+
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
 
 // guardar el carrito local completo remplazando el calor anterior
 async function writeLocalCart(items) {
