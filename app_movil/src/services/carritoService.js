@@ -58,7 +58,7 @@ function summarize(item){
     return{items: normalized, totalItems, total};
 }
 
-const carritoservice ={
+const carritoService ={
     //obtiene el carrito desde el backend o desde el storage segun la sesion
     getCarrito: async (isAuthenticated) =>{
         if (isAuthenticated){    
@@ -90,7 +90,78 @@ const carritoservice ={
             existing.cantidad += cantidad;
         } else {
             localItems.push({
-                id: Date.now()})
+                id: Date.now(),
+                productoId: producto.id,
+                nombre: producto.nombre,
+                precion:Number(producto.precio || 0),
+                cantidad,
+            });
         }
+        await writeLocalCart(localItems);
+    },
+
+    //cambia la cantidad de un item ya existente
+    updateCantidad: async ({isAuthenticated, itemId, cantidad}) =>{
+        if (isAuthenticated) {
+            await apiClient.put(`/cliete/carrito/${itemId}`,{cantidad});
+            return;
+        }
+
+        const localItems = await readLocalCart();
+        const item = localItems.find((it) => Number (it.id) === Number (itemId));
+
+        if (!item){
+            return;
+        }
+
+        item.cantidad = cantidad;
+        await writeLocalCart(localItems);
+    },
+
+    //eliminar un item puntual del carrito
+    removeItem: async ({isAuthenticated, itemId}) => {
+        if (isAuthenticated){
+            await apiClient.delete(`/cliente/carrito/${itemId}`);
+            return;
+        }
+
+        const localItems = await readLocalCart();
+        const filtered = localItems.filter((it) => Number (it.id) !== Number(itemId));
+        await writeLocalCart(filtered);
+    },
+
+    //vacia por completo el carrito local o remover
+    clearcarrito:async (isAuthenticated) =>{
+        if(isAuthenticated) {
+            await apiClient.delete(`/cliente/carrito`);
+            return;
+        }
+
+        await writeLocalCart([]);
+    },
+
+    //migrar todos los items guardados localmente al carrito del backend despues de que el usuario inicie sesion
+
+    mergelocalToBackend: async () => {
+        const localItems= await readLocalCart();
+        if (localItems.length === 0){
+            return
+        }
+
+
+        for(const item of localItems){
+            try{
+                await apiClient.post(`/cliente/carrito`,{
+                    productoId:item.productoId,
+                    cantidad: item.cantidad
+                });
+            }catch {
+                // si un item falla"producto eliminado continua conotro"
+            }
+        }
+
+        await writeLocalCart([])
     }
-}
+};
+
+export default carritoService;

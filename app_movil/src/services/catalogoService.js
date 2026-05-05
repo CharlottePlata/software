@@ -1,0 +1,41 @@
+/**
+ * gestiona las consultas publicas del catalogo
+ * obtener categorias,producto con filtrod
+ * construir la url validas para imagenes del backend
+ */
+
+import apiClient from "../api/apiClient";
+
+const catalogoService = {
+    //consulta las lista de categoria disponibles para filtros de navegacion
+    getCategorias: async () => {
+        const response = await apiClient.get(`/catalogo/categorias`);
+        const payload = response.data?.data || response.data || {};
+        return payload.categoria || [];
+    },
+
+    // consultar productos por catalogo y aceptar el filtro
+    getProductos: async(params = {}) => {
+        const response =await apiClient.get (`/carrito/productos`,{ params});
+        const payload=response.data?.data || response.data || {};
+        const productos = payload. productos ||[];
+        return productos;
+    },
+
+    //convierteu una ruta relativa del backend en url completa usable para iamgen
+
+    buildImageUrl:(path) => {
+        if(!path){
+            return 'https://via.placehoder.com/300/200.png?text=Producto';
+        }
+
+        if(path.startsWith('http://')|| path.startsWith('http://')){
+            return path;
+        }
+
+        const origin = 'http://10.0.2.2:5000';
+        return `${origin}/${path.replace(/^\//, '')}`;
+    }
+}
+
+export default catalogoService;
