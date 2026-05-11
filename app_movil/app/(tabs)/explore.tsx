@@ -195,6 +195,20 @@ export default function TabTwoScreen(){
             setLoadingSubmit(false);
         }
 
-    };   
+    };
+    
+    /**
+     * funcion handleUpdatePerfil
+     * valida y envia los cambios al perfil del usuario autenticado
+     */
+    const handleUpdatePerfil = async () => {
+        setPerfilError('');
+        setPerfilSuccess('');
+        // al menos uno de los tres campos debe estar modificado
+        if (!editNombre.trim () && !editEmail.trim() && !editPassword.trim()){
+            setPerfilError('Modifica al menos un campo');
+            return;
+        }
+    }
     
 }
