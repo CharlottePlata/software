@@ -28,7 +28,7 @@ import {
         View} from "react-native";
 
 //lee los parametros de la url para obtener el id del pedido
-import {router} from "expo-router"; // navegacion y parametros de rute
+import {router, useLocalSearchParams} from "expo-router"; // navegacion y parametros de rute
 import { themedText } from '@/components/themed-text';
 import apiClient  from '../../src/api/apiClient';
 import { activarProducto,desactivarProducto,deleteProduct} from '../../src/services/adminService';
@@ -60,94 +60,20 @@ const push = (path: string) => (router as unknown as {push:(p: string)=> void}).
 const pushParams = ( pathname: string, params: Record<string, string>) =>
 (router as unknown as {push:(p: {pathname: string; params: Record<string, string>})=> void}). push({pathname, params})
 
-export default function AdminProductoForm() {
+export default function AdminProductosScreen() {
     /**
-     * navegacion
-     * use Router permite navegar programaticamente 
+     * contexto de autenticacion 
      */
-    const router = useRouter();
+    const{user} = useAuth() as { user: AuthUser | null};
     /**
-     * Parametros de ruta
-     * el parametro producto e opcional solo existe modo editar
-     *  expo Router son String
+     * estado local
      */
-    const params = useLocalSearchParams<{producto?:string}>();
-    
-    /**
-     * Producto recibido
-     * si exites el parametro intenta pasearlo como json
-     * si falla el parse (JSON mal formado),lo deja como undefined ( modo creacion) 
-     */
-    let producto: Producto | undefined;
-    if(params.producto){
-        try{
-            producto = JSON .parse(params.producto) as Producto;
-        } catch {
-            producto = undefined; // fallo silecioso se trata con formulario vacio
-        }
-    }
-    /**
-     * modo  formulario
-     * editing = true modo edicion(producto recibido)
-     * editing =  false modo creacion
-     */
-    const editing = !!producto;
-
-    /**
-     * Estado local campos del formulario
-     * los campos se inicializan con los valores del producto si se esta editando
-     * o en cadena si vacia se esta creando
-     * El operador ?? devuelve el lado derecho solo si el izquierdo no es null/ undefined
-     */
-
-    const [nombre, setNombre] = useState(producto?. nombre ?? '');
-    const [descripcion, setDescripcion] = useState(producto?. descripcion ?? '');
-    // precio y stock guarda como trin para facilitar la entrada en el TextInput, se convierten a numero al guardar
-    const [precio, setPrecio] = useState(producto?. precio?. toString() ?? ''); // convertir a string para el input
-    const [stock, setStock] = useState(producto?. stock?.toString() ?? ''); // convertir a string para el input
-    const [imagen, setImagen] = useState(producto?. imagen ?? '');
-    const [loading, setLoading] = useState(false); // estado de carga para evitar multiples envios
-
-    /**
-     * Funcion hadlwsunait
-     * vslida los campos al servicio correspondiente (crear o actualizar)
-     * y Resgreos de la pantalla anteriror si fue ecitoso
-     */
-    const handleSubmit = async () => {
-        // validacion basica los 4 campos obligatorios no puden estar vacios
-        if(!nombre || !descripcion || !precio || !stock){
-            Alert.alert('Error', 'Todos los campos son obligatorios');
-            return;
-        }
-
-        setLoading(true); // Deshanbilita el boton durante a la peticion
-        try{
-            // construye el objeto de datos convertiendo precio y stock a numero
-            const data = {
-                nombre,
-                descripcion,
-                precio: parseFloat(precio), // convertir a numero
-                stock: parseInt(stock, 10), // convertir a numero entero
-                imagen,
-            };
-            if (editing && producto?.id){
-                // mod edicion llama a updateProduct con el id  del producto
-                // se usa el operador de propagacion para incluir el id en el objeto de datos
-                await updateProduct(producto.id || producto.id, data);
-                Alert.alert('Éxito', 'Producto actualizado correctamente');
-            }else{
-                //cuando el formulario esta vacio se comporta como creacion
-                await createProduct(data);
-                Alert.alert('Exito','Producto creado');
-            }
-            router.back(); // regresa a /admin/prodcutos despues de guardar
-        } catch {
-            // si 
-            Alert.alert('Error', 'No se puedo guardar el producto')
-        } finally {
-            setLoading(false); // habilita el boton nuevamente
-        }
-    }
-
+    const [productos, setProductos]= useState<Producto[]>([]); // productos en la pagina actual
+    const [loading, setLoading] = useState(false); // estado de carga para mostrar indicador
+    const [errorMessage, setErrorMessage] = useState(''); 
+    const [ busqueda, setBusqueda] = useState(''); // texto de busqueda en tiempo real
+    const [pagina, setPagina] = useState(1);
+    const [totalPaginas, setTotalPaginas] = useState('1'); // total de paginas para paginacion
 }
+
 
