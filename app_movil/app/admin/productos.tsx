@@ -73,7 +73,43 @@ export default function AdminProductosScreen() {
     const [errorMessage, setErrorMessage] = useState(''); 
     const [ busqueda, setBusqueda] = useState(''); // texto de busqueda en tiempo real
     const [pagina, setPagina] = useState(1);
-    const [totalPaginas, setTotalPaginas] = useState('1'); // total de paginas para paginacion
-}
+    const [totalPaginas, setTotalPaginas] = useState(1); // total de paginas para paginacion
+
+    /**
+     * Funcion fetchProductos
+     * consulta get/admin/productos con filtro de busqueda y paginacion
+     */
+    const fechProductos = async (page = 1, serch = '') => {
+        setLoading(true);
+        setErrorMessage('');
+            try{
+                const params: string[] = [];
+                if(serch.trim()) params.push(`Buscar=${encodeURIComponent(serch.trim())}`); 
+                params.push(`Pagina=${page}`); // pagina actual
+                params.push(`limite=10`); // 10 productos por pagina
+                const url = `/admin/productos?${params.join('&')}`;
+                const res= await apiClient.get(url);
+                const productosData: Producto[] = res.data?.data?.productos || [];
+                setPagina(page);
+                setTotalPaginas(res.data?.data?.paginacion?.totalPaginas || 1);
+            } catch (error: unknown) {
+                setErrorMessage((error as {message?: string}).message || 'Error al cargar productos');
+            } finally{
+                setLoading(false);
+            }
+        };
+        useEffect(() => {
+            fechProductos(1,'');
+        }, []); // se ejecuta una vez al montar el componente
+
+        // avanza y retrocede paginas
+        const handlePagina = (next: number)=> {
+            const nueva = Math.max(1, Math.min(totalPaginas, pagina + next)); // asegura que la pagina este entre 1 y totalPaginas
+            fechProductos(nueva, busqueda);
+        };
+
+        const isAdmin = user?.rol === 'administrador';
+    }
+
 
 
