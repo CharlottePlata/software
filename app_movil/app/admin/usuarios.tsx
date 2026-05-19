@@ -75,8 +75,200 @@ export default function AdminUsuariosScreen(){
         setLoading(true);
         setErrorMessage('');
         try{
-            //const
+            //construye la query string dinamica  segun los parametris
+            const params = [];
+            if (search.trim()) params.push(`buscar=${encodeURIComponent(search.trim())}`);
+            params.push(`pagina=${page}`); // pagina actual
+            params.push(`limite=10`);
+            const url = `/admin/usuarios?${params.join('&')}`;
+            const res = await apiClient.get(url);
+            const usuariosData : Usuario[] = res.data?.data?.usuarios || [];
+            setUsuarios(usuariosData);
+            setPagina(page);
+            setTotalPaginas(res.data?.data?.paginacion?.totalPaginas || 1);
+        }catch (error: unknown){
+            setErrorMessage((error as {message?: string})?.message || 'Error  no se puede cargar los usuarios');
+        }finally{
+            setLoading(false);
         }
-    }
+    };
+    
+    /**
+     * efecto carga inicial
+     * carga la primera pagina sin filtro al montar el componente
+     */
+    useEffect (() => {
+        fetchUsuarios();
+    },[]);
 
+    /**
+     * Funcion handleBuscar
+     * busca desde la pagina 1 con el texto actual de campo de busqueda
+     * se usa el boton buscar para buscar manual
+     */
+    const handleBuscar = () => {
+        fetchUsuarios(1, busqueda);
+    };
+
+    /**
+     * Funcion handlePagina
+     * cambias de pagin a dentro del rango valido [1, totla de paginas]
+     */
+
+    const handlePagina = (next: number) => {
+        const nueva = Math.max(1,Math.max(totalPaginas, pagina + next));
+        fetchUsuarios(nueva, busqueda); // conservar el filtro de busqueda al cambiar de pagina 
+    };
+
+    // flag: solo administradores puede ver los botones de accion
+    const isAdmin = user?.rol === 'administrador';
+    // estilos
+    return(
+        <View style={styles.container}>
+
+      {/* Título de la pantalla */}
+      <ThemedText type="title">Usuarios</ThemedText>
+
+      {/* ── BARRA DE BÚSQUEDA ──────────────────────────────────────────── */}
+      <View style={styles.searchRow}>
+        <TextInput
+          placeholder="Buscar usuario..."
+          value={busqueda}
+          onChangeText={(text) => {
+            setBusqueda(text);
+            fetchUsuarios(1, text); // Búsqueda en tiempo real al escribir.
+          }}
+          style={styles.input}
+        />
+        {/* Botón de búsqueda manual */}
+        <Pressable style={styles.searchBtn} onPress={handleBuscar}>
+          <ThemedText style={styles.searchBtnText}>Buscar</ThemedText>
+        </Pressable>
+      </View>
+
+      {/* Spinner visible mientras carga */}
+      {loading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" />
+          <ThemedText>Cargando usuarios...</ThemedText>
+        </View>
+      ) : null}
+
+      {/* Mensaje de error si la petición falla */}
+      {errorMessage ? <ThemedText style={styles.error}>{errorMessage}</ThemedText> : null}
+
+      {/* ── LISTA DE USUARIOS ───────────────────────────────────────────── */}
+      <FlatList
+        data={usuarios}
+        keyExtractor={(item) => String(item.id || item.id)} // Clave única por usuario.
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            {/* Área de datos del usuario */}
+            <View style={styles.cardBody}>
+              {/* Nombre completo */}
+              <ThemedText type="defaultSemiBold">{item.nombre} {item.apellido}</ThemedText>
+              {/* Correo electrónico */}
+              <ThemedText>{item.email}</ThemedText>
+              {/* Rol y estado activo/inactivo separados por " | " */}
+              <ThemedText style={styles.meta}>{item.rol} | {item.activo ? 'Activo' : 'Inactivo'}</ThemedText>
+            </View>
+
+            {/* ── BOTONES DE ACCIÓN (solo admin) ──────────────────────── */}
+            {isAdmin && (
+              <View style={styles.actionsRow}>
+                {/* Botón Activar/Desactivar: rojo si está activo, verde si inactivo */}
+                <Pressable
+                  style={[styles.actionBtn, { backgroundColor: item.activo ? '#b93a32' : '#218f4c' }]}
+                  onPress={async () => {
+                    try {
+                      if (item.activo) {
+                        await desactivarUsuario(item.id || item.id); // Bloquea la cuenta.
+                      } else {
+                        await activarUsuario(item.id || item.id);    // Desbloquea la cuenta.
+                      }
+                      fetchUsuarios(pagina, busqueda); // Recarga para reflejar el cambio.
+                    } catch {
+                      Alert.alert('Error', 'No se pudo cambiar el estado');
+                    }
+                  }}
+                >
+                  <ThemedText style={styles.actionBtnText}>{item.activo ? 'Desactivar' : 'Activar'}</ThemedText>
+                </Pressable>
+
+                {/* Botón Eliminar: siempre rojo. Muestra confirmación antes de ejecutar. */}
+                <Pressable
+                  style={[styles.actionBtn, { backgroundColor: '#b93a32' }]}
+                  onPress={() => {
+                    Alert.alert('Eliminar usuario', 'Estas seguro de eliminar este usuario?', [
+                      { text: 'Cancelar', style: 'cancel' },
+                      {
+                        text: 'Eliminar',
+                        style: 'destructive',
+                        onPress: async () => {
+                          try {
+                            await deleteUsuario(item.id || item.id); // DELETE al backend.
+                            fetchUsuarios(pagina, busqueda);           // Recarga la lista.
+                          } catch {
+                            Alert.alert('Error', 'No se pudo eliminar');
+                          }
+                        },
+                      },
+                    ]);
+                  }}
+                >
+                  <ThemedText style={styles.actionBtnText}>Eliminar</ThemedText>
+                </Pressable>
+              </View>
+            )}
+          </View>
+        )}
+        // Estado vacío: solo cuando no hay carga ni error activos.
+        ListEmptyComponent={!loading && !errorMessage ? <ThemedText>No hay usuarios.</ThemedText> : null}
+        style={styles.list}
+      />
+
+      {/* ── PAGINACIÓN ──────────────────────────────────────────────────── */}
+      <View style={styles.paginationRow}>
+        <Pressable style={styles.pageBtn} onPress={() => handlePagina(-1)} disabled={pagina <= 1}>
+          <ThemedText style={styles.pageBtnText}>{'<'}</ThemedText>
+        </Pressable>
+        <ThemedText style={styles.pageLabel}>Página {pagina} de {totalPaginas}</ThemedText>
+        <Pressable style={styles.pageBtn} onPress={() => handlePagina(1)} disabled={pagina >= totalPaginas}>
+          <ThemedText style={styles.pageBtnText}>{'>'}</ThemedText>
+        </Pressable>
+      </View>
+    </View>
+  );
 }
+
+// ── ESTILOS ───────────────────────────────────────────────────────────────────
+const styles = StyleSheet.create({
+  // Contenedor raíz: pantalla completa con padding y gap entre elementos.
+  container: { flex: 1, padding: 16, gap: 10 },
+  centered: { alignItems: 'center', gap: 10, marginVertical: 20 },
+  error: { color: '#b93a32' },
+  // Fila de búsqueda: input expandible + botón fijo.
+  searchRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  input: { flex: 1, borderWidth: 1, borderColor: '#d5d5d5', borderRadius: 10, paddingHorizontal: 12, backgroundColor: '#fff' },
+  searchBtn: { backgroundColor: '#0a7ea4', borderRadius: 10, paddingHorizontal: 14, justifyContent: 'center' },
+  searchBtnText: { color: '#fff', fontWeight: '700' },
+  // Lista ocupa todo el espacio vertical entre los controles.
+  list: { flex: 1 },
+  // Tarjeta de usuario: fila con datos a la izquierda y botones a la derecha.
+  card: { flexDirection: 'row', gap: 10, borderWidth: 1, borderColor: '#e8e8e8', borderRadius: 12, padding: 10, backgroundColor: '#fff', marginBottom: 8, alignItems: 'center' },
+  // Columna de botones a la derecha de la tarjeta.
+  actionsRow: { flexDirection: 'column', gap: 6, marginLeft: 8 },
+  // Botón pequeño: color de fondo se aplica inline (rojo/verde según estado).
+  actionBtn: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8, marginBottom: 2 },
+  actionBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  // Área de datos: ocupa el espacio restante de la tarjeta.
+  cardBody: { flex: 1 },
+  // Rol y estado en gris secundario.
+  meta: { color: '#888', fontSize: 13 },
+  // Paginación centrada.
+  paginationRow: { flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
+  // Botones de página: azul petróleo con texto blanco.
+  pageBtn: { backgroundColor: '#0a7ea4', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  pageBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  pageLabel: { fontWeight: 'bold' },
+});
