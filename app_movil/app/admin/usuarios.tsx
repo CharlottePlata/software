@@ -68,7 +68,15 @@ export default function AdminUsuariosScreen(){
     /**
      * Fucion de fetchUsuarios
      * consulta get/admin/usuarios con filtro de busqueda y paginacion
-     * page pagina a cargar. 
+     * page pagina a cargar.  search  texto de filtro 
      */
+
+    const fetchUsuarios = async (page = 1, search = '') => {
+        setLoading(true);
+        setErrorMessage('');
+        try{
+            //const
+        }
+    }
 
 }
