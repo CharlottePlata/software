@@ -7,7 +7,7 @@
  */
 
 import apiClient from '../api/apiClient';
-import {STORAGE_KEY} from '../utils/constants';
+import {STORAGE_KEYS} from '../utils/constants';
 import {storageGetItem, storageMultiRemove, storageSetItem} from '../utils/storage';
 
 const authService = {
@@ -17,10 +17,11 @@ const authService = {
         const payload = response.data?.data || response.data;
         
         if (payload?.token){
-            await storageSetItem(STORAGE_KEY.token, payload.token);
+            await storageSetItem(STORAGE_KEYS.token, payload.token);
         }
-        if (payload?.usuario){
-            await storageSetItem(STORAGE_KEY.usuario, payload.usuario);
+        const usuario = payload?.usuario || payload?.user || null;
+        if (usuario){
+            await storageSetItem(STORAGE_KEYS.user, JSON.stringify(usuario));
         }
 
         return payload;
@@ -35,28 +36,29 @@ const authService = {
 
 //cerra sesion eliminando el token y los datos del usuario del almacenamiento local
     logout: async () => {
-        await storageMultiRemove([STORAGE_KEY.token,STORAGE_KEY.user]);
+        await storageMultiRemove([STORAGE_KEYS.token, STORAGE_KEYS.user]);
     },
 
     //lee el almacenamiento  local
     getSession: async () =>{
-        const token = await storageGetItem(STORAGE_KEY.token);
-        const userRaw = await storageGetItem(STORAGE_KEY.user);
+        const token = await storageGetItem(STORAGE_KEYS.token);
+        const userRaw = await storageGetItem(STORAGE_KEYS.user);
         const user = userRaw ? JSON.parse(userRaw) : null;
         return {token, user};
     },
 
     //actualizar 
     // actualizar el backend usando el payloand del formulario del admin
-    update: async (data) => {
+    updatePerfil: async (data) => {
         const response = await apiClient.put(`/auth/me`, data);
-        const usuario = response.data?.data?.usuario || response.data.usuario|| null;
+        const payload = response.data?.data || response.data || {};
+        const usuario = payload.usuario || payload.user || null;
         
         if(usuario){
-            await storageSetItem(STORAGE_KEY.user, JSON.stringify(usuario));
+            await storageSetItem(STORAGE_KEYS.user, JSON.stringify(usuario));
         }
 
-        return response.data;
+        return usuario || response.data || null;
     },
 };
 

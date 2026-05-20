@@ -11,7 +11,7 @@ import {createContext, useState, useEffect, useRef, useContext, useCallback, use
 import {useAuth} from './AuthContext';
 import carritoService from '../services/carritoService';
 
-const CarritoContext = createContext();
+const CarritoContext = createContext(null);
 
 export function CarritoProvider({children}) {
     //lee isAuthenticated e isloadingSession del contexto de autenticacion
@@ -19,7 +19,7 @@ export function CarritoProvider({children}) {
 
     //Estado del carrito
     const [items, setItems] = useState([]); // lista de productos
-    const [totalItems, setTotalItems] = useState([0]); //suma de cantidades
+    const [totalItems, setTotalItems] = useState(0); //suma de cantidades
     const [total, setTotal] = useState(0); // precio total
     const [loading, setLoading] = useState(true); // true miesntras carga el carrito
 
@@ -46,7 +46,7 @@ export function CarritoProvider({children}) {
 
         if (isAuthenticated && !prevAuthenticated.current){
             try {
-                await carritoService.mergeLocalCart(carrito);
+                await carritoService.mergeLocalCart();
             }catch {
                 // si la fusion falla continua sin bloquear
             }
@@ -59,7 +59,6 @@ export function CarritoProvider({children}) {
         try{
             //getcarrito decide internamente si consulta el backend o el asyncstrorage
             const snapshot = await carritoService.getCarrito(isAuthenticated);
-            setCarrito(isAuthenticated);
             setItems(snapshot.items);
             setTotalItems(snapshot.totalItems);
             setTotal(snapshot.total);
@@ -99,7 +98,7 @@ export function CarritoProvider({children}) {
      */
 
     const cambiarCantidad = useCallback(
-        async (productoId, cantidad) => {
+        async (itemId, cantidad) => {
             await carritoService.updateCarritoItem({
                 isAuthenticated, itemId, cantidad
             }); await hydrate();
@@ -113,9 +112,10 @@ export function CarritoProvider({children}) {
 
     const eliminarItem = useCallback(
         async(itemId) =>  {
-            await CarritoService.removeItem({
+            await carritoService.removeItem({
                 isAuthenticated, itemId
             });
+            await hydrate();
         },
         [hydrate, isAuthenticated]
     )
@@ -146,8 +146,7 @@ export function CarritoProvider({children}) {
             cambiarCantidad,
             eliminarItem,
             vaciarCarrito
-
-        })
+        }),
         [items, totalItems, total, loading, hydrate, agregarProducto, cambiarCantidad, eliminarItem, vaciarCarrito]
     );
 

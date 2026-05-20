@@ -13,7 +13,7 @@
  * useState maneja variables de estado local
 */
 // manejo de variables de estoado local
-import {useState, useEffect, useMemo, use} from 'react';
+import {useState, useEffect, useMemo} from 'react';
 // importar componentes
 //  Dimensions optiene al ancho y alto de la pantalla para hacer diseños responsivos
 // flatlist lista optimiza con virtializacion para mostrar grandes cantidades de datos
@@ -89,7 +89,7 @@ export default function HomeScreen(){
      */
     const [productos, setProductos] = useState<any[]>([]);
     // categoria lista de categorias traida del backend
-    const [categorias, setCategoria] = useState<any[]>([]);
+    const [categorias, setCategorias] = useState<any[]>([]);
 
     // Estados de UI 
     // loading true miestras carga los datos por primera vez
@@ -117,7 +117,7 @@ export default function HomeScreen(){
 
     const handleAgregarAlCarrito = async (producto: any) =>{
         try {
-            await agregarProducto(productoDetalle, 1);
+            await agregarProducto(producto, 1);
             // agrgar 1 unitario del producto  
             Alert.alert ('Carrito', `${producto.nombre} se ha agregado al carrito.`);
         } catch (error) {
@@ -134,7 +134,7 @@ export default function HomeScreen(){
      */
 
     const loadCatalogo = async ({ isRefresh = false} = {}) => {
-        if (!isRefresh) setRefreshing(true); 
+        if (isRefresh) setRefreshing(true); 
         // pull-to-refresh activa el indicador de refresco
         else setLoading(true); //  carga inicial activa el spinner granmde
         setErrorMessage('');
@@ -149,9 +149,9 @@ export default function HomeScreen(){
             ]);
             //guarda los datos solo si son array
              setProductos(Array.isArray(productosData) ? productosData : []);
-             setCategoria(Array.isArray(categoriasData) ? categoriasData : []);
+             setCategorias(Array.isArray(categoriasData) ? categoriasData : []);
         }catch (error: unknown) {
-            const msg = (error as {message?:string})?. message;
+            const msg = (error as {message?:string})?.message;
             setErrorMessage(msg || 'No fue posible de cargar catalogo');
         } finally{
             // Siempre desactiva los indicadores al teerminar sea exito o error

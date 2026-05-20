@@ -24,7 +24,8 @@ apiClient.interceptors.request.use(
 
         if(token){
             //formaro estandar bearer Authorizacion: bearer <token>
-            config.headers.Autorizacion = `Bearer ${token}`;
+            config.headers = config.headers || {};
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     },
@@ -38,7 +39,7 @@ apiClient.interceptors.request.use(
 //respuestas con error 4xx o 5xx /red extrae el mensaje del backend
 //si existe si no usa el mensaje de axios o un mensaje generico
 
-apiClient.interceptor.response.use(
+apiClient.interceptors.response.use(
     (response)=> response,
     (error)=>{
         const backendMessage = error.response?.data?.message; //mensaje de servidor

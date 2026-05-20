@@ -27,7 +27,7 @@ async function readLocalCart() {
 
 // guardar el carrito local completo remplazando el calor anterior
 async function writeLocalCart(items) {
-    await storageSetItems(STORAGE_KEYS.carritoLocal, JSON.stringify(items));
+    await storageSetItem(STORAGE_KEYS.carritoLocal, JSON.stringify(items));
     
 }
 
@@ -77,13 +77,13 @@ const carritoService ={
     addToCarrito: async ({isAuthenticated, producto, cantidad = 1}) =>{
         if(isAuthenticated){
             await apiClient.post('/cliente/carrito',{
-                productoId:producto.Id,
+                productoId:producto.id,
                 cantidad
             });
             return
         }
         const localItems = await readLocalCart();
-        const existing = localItems.find((items) => Number (item.productoId) === Number(producto.id));
+        const existing = localItems.find((item) => Number(item.productoId) === Number(producto.id));
 
 
         if(existing){
@@ -93,7 +93,7 @@ const carritoService ={
                 id: Date.now(),
                 productoId: producto.id,
                 nombre: producto.nombre,
-                precion:Number(producto.precio || 0),
+                precio:Number(producto.precio || 0),
                 cantidad,
             });
         }
@@ -101,9 +101,9 @@ const carritoService ={
     },
 
     //cambia la cantidad de un item ya existente
-    updateCantidad: async ({isAuthenticated, itemId, cantidad}) =>{
+    updateCarritoItem: async ({isAuthenticated, itemId, cantidad}) =>{
         if (isAuthenticated) {
-            await apiClient.put(`/cliete/carrito/${itemId}`,{cantidad});
+            await apiClient.put(`/cliente/carrito/${itemId}`,{cantidad});
             return;
         }
 
@@ -131,7 +131,7 @@ const carritoService ={
     },
 
     //vacia por completo el carrito local o remover
-    clearcarrito:async (isAuthenticated) =>{
+    clearCarrito:async (isAuthenticated) =>{
         if(isAuthenticated) {
             await apiClient.delete(`/cliente/carrito`);
             return;
@@ -142,7 +142,7 @@ const carritoService ={
 
     //migrar todos los items guardados localmente al carrito del backend despues de que el usuario inicie sesion
 
-    mergelocalToBackend: async () => {
+    mergeLocalCart: async () => {
         const localItems= await readLocalCart();
         if (localItems.length === 0){
             return
