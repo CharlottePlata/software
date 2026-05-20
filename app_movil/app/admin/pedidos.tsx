@@ -25,7 +25,7 @@ import {
 //lee los parametros de la url para obtener el id del pedido
 import {router} from "expo-router";
 // ThemedText: texto que aplica colores del tema del dispositivo (claro/oscuro)
-import { ThemedText } from '@components/themed-text';
+import { ThemedText } from '../../components/themed-text';
 //cliente http axios con jWT
 import apiClient from '../../src/api/apiClient';
 

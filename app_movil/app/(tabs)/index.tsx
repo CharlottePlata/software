@@ -37,9 +37,9 @@ import {Ionicons} from "@expo/vector-icons";
 //CatalogoService servicio que hace las llamadas a (API) del backend para productosy categorias
 import catalogoService  from "../../src/services/catalogoService";
 // ThemedText: texto que aplica colores del tema del dispositivo (claro/oscuro)
-import { ThemedText } from '@components/themed-text';
+import { ThemedText } from '../../components/themed-text';
 //themedView: color de fondo  automatico segun el tema del dispositivo
-import { ThemedView } from '@components/themed-View'; 
+import { ThemedView } from '../../components/themed-view'; 
 // useCarrito hook el contexto del carrito para agregar productos
 import { useCarrito } from '../../src/context/CarritoContext';
 

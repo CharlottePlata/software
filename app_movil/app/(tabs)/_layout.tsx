@@ -9,13 +9,13 @@ import {Tabs} from 'expo-router';
 //react necesario para que el JSX funcione correctamente
 import React from 'react';
 //hapticTab version personalizado del boton de la pestaña que agrega vibracion tactil (haptic feedback) al precionar el tb
-import {HapticTab} from '@/components/haptic-tab';
+import {HapticTab} from '../../components/haptic-tab';
 //Iconsymbols componente que muestra iconos  Sf Symbols IOS y materia android
-import {IconSymbol} from '@/components/iu/icon-symbol';
+import {IconSymbol} from '../../components/ui/icon-symbol';
 //colors objeto de colores del tema de app modo claro y oscuro
-import {colors} from '@/constants/theme'
+import {Colors} from '../../constants/theme'
 //useColorShema hook que detecta si el dispositivo esta en modo claro o oscuro
-import {useColorScheme} from '@/hooks/use-color-scheme';
+import {useColorScheme} from '../../hooks/use-color-scheme';
 
 //TabLayout componente principal que configura toda la barra de navegacion
 //expo Router lo exporta como default y lo monta automaticamente
@@ -29,7 +29,7 @@ export default function TabLayout(){
             screenOptions={{
                 //tabbarAtiveTintCoor color de icono ytexto de la pestaña activa
                 //sincolorsheme es null ( no dectectado) usa light por defecto
-                tabBarActiveTintColor: colors[colorSheme ?? 'light'].tint,
+                tabBarActiveTintColor: Colors[colorSheme ?? 'light'].tint,
                 //headerShow false oculta el encabezado superior en toda las pantalla
                 headerShown:false,
                 //tabBArButton remplza el boron estandar por hapticTab con vibracion

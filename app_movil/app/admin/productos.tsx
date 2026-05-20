@@ -29,7 +29,7 @@ import {
 
 //lee los parametros de la url para obtener el id del pedido
 import {router, useLocalSearchParams} from "expo-router"; // navegacion y parametros de rute
-import { ThemedText } from '@/components/themed-text';
+import { ThemedText } from '../../components/themed-text';
 import apiClient  from '../../src/api/apiClient';
 import { activarProducto,desactivarProducto,deleteProduct} from '../../src/services/adminService';
 import { useAuth } from '../../src/context/AuthContext';

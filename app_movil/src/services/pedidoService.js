@@ -7,7 +7,7 @@ import apiClient from "../api/apiClient";
 
 const pedidoService = {
     // crea un pedido nuevo con los datos capturados en checkout
-    creaPedido: async ({direccionEnvio, telefono, metodoPago = 'efectivo', notasAdicionales= ''}) => {
+    crearPedido: async ({direccionEnvio, telefono, metodoPago = 'efectivo', notasAdicionales= ''}) => {
         const response =await apiClient.post('/cliente/pedidos',{
             direccionEnvio,
             telefono,
@@ -25,7 +25,7 @@ const pedidoService = {
 
 
     //obtiene el detalle completo de un pedido por id
-    getPedidosById: async (id) => {
+    getPedidoById: async (id) => {
         const response = await apiClient.get(`/cliente/pedidos/${id}`);
         const payload = response.data?.data?.pedido || response.data?.pedido || response.data;
         return payload.pedido || {};

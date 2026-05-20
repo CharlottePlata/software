@@ -24,7 +24,7 @@ import {
 //navegacion expo router
 import { router } from "expo-router";
 //Biblioteca de iconos de react 
-import {Ionicons} from "@/expo/vector-icons";
+import {Ionicons} from "@expo/vector-icons";
 //cliente http axios con jWT
 import apiClient from '../../src/api/apiClient';
 // autenticacion
