@@ -16,9 +16,9 @@ const catalogoService = {
 
     // consultar productos por catalogo y aceptar el filtro
     getProductos: async(params = {}) => {
-        const response =await apiClient.get (`/carrito/productos`,{ params});
+        const response =await apiClient.get (`/catalogo/productos`,{ params});
         const payload=response.data?.data || response.data || {};
-        const productos = payload. productos ||[];
+        const productos = payload.productos ||[];
         return productos;
     },
 
@@ -29,7 +29,7 @@ const catalogoService = {
             return 'https://via.placehoder.com/300/200.png?text=Producto';
         }
 
-        if(path.startsWith('http://')|| path.startsWith('http://')){
+        if(path.startsWith('http://')|| path.startsWith('https://')){
             return path;
         }
 
