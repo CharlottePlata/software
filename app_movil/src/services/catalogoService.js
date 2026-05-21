@@ -5,13 +5,14 @@
  */
 
 import apiClient from "../api/apiClient";
+import { API_ORIGIN } from '../utils/constants';
 
 const catalogoService = {
     //consulta las lista de categoria disponibles para filtros de navegacion
     getCategorias: async () => {
         const response = await apiClient.get(`/catalogo/categorias`);
         const payload = response.data?.data || response.data || {};
-        return payload.categoria || [];
+        return payload.categorias || [];
     },
 
     // consultar productos por catalogo y aceptar el filtro
@@ -33,7 +34,7 @@ const catalogoService = {
             return path;
         }
 
-        const origin = 'http://10.0.2.2:5000';
+        const origin = API_ORIGIN || 'http://10.0.2.2:5000';
         return `${origin}/${path.replace(/^\//, '')}`;
     }
 }

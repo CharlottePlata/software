@@ -48,9 +48,10 @@ export function AuthProvider({ children }) {
     const login = useCallback(async (email, password) => {
         const response = await authService.login(email, password);
         const payload = response?.data || response || {};
+        const usuario = payload.usuario || payload.user || null;
 
         setToken(payload.token || null);
-        setUser(payload.user || null);
+        setUser(usuario);
 
         return response;
     }, []);

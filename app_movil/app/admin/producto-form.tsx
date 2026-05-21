@@ -9,7 +9,7 @@
 
 
 // manejo de variables de estoado local
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 // importar componentes
 //  Dimensions optiene al ancho y alto de la pantalla para hacer diseños responsivos
 // flatlist lista optimiza con virtializacion para mostrar grandes cantidades de datos
@@ -18,6 +18,7 @@ import {
     Alert,
     Button, 
     ScrollView, 
+  Pressable,
     StyleSheet, 
     Text,
     TextInput} from "react-native";
@@ -25,6 +26,7 @@ import {
 //lee los parametros de la url para obtener el id del pedido
 import {useLocalSearchParams, useRouter} from "expo-router"; // navegacion y parametros de rute
 import { createProduct, updateProduct } from '../../src/services/adminService';
+import apiClient from '../../src/api/apiClient';
 /**
  * Tipo de producto
  * estructura del producto recibido como parametro cuando edita
@@ -86,6 +88,10 @@ export default function AdminProductoForm() {
     const [stock, setStock] = useState(producto?. stock?.toString() ?? ''); // convertir a string para el input
     const [imagen, setImagen] = useState(producto?. imagen ?? '');
     const [loading, setLoading] = useState(false); // estado de carga para evitar multiples envios
+    const [categorias, setCategorias] = useState<Array<{id?:number; nombre?:string}>>([]);
+    const [subcategorias, setSubcategorias] = useState<Array<{id?:number; nombre?:string; categoriaId?:number}>>([]);
+    const [categoriaId, setCategoriaId] = useState<number|undefined>(undefined);
+    const [subcategoriaId, setSubcategoriaId] = useState<number|undefined>(undefined);
 
     /**
      * Funcion hadlwsunait
@@ -93,10 +99,14 @@ export default function AdminProductoForm() {
      * y Resgreos de la pantalla anteriror si fue ecitoso
      */
     const handleSubmit = async () => {
-        // validacion basica los 4 campos obligatorios no puden estar vacios
+        // validacion basica los campos obligatorios no pueden estar vacios
         if(!nombre || !descripcion || !precio || !stock){
-            Alert.alert('Error', 'Todos los campos son obligatorios');
-            return;
+          Alert.alert('Error', 'Todos los campos son obligatorios');
+          return;
+        }
+        if(!categoriaId || !subcategoriaId){
+          Alert.alert('Error', 'Selecciona categoría y subcategoría');
+          return;
         }
 
         setLoading(true); // Deshanbilita el boton durante a la peticion
@@ -107,7 +117,9 @@ export default function AdminProductoForm() {
                 descripcion,
                 precio: parseFloat(precio), // convertir a numero
                 stock: parseInt(stock, 10), // convertir a numero entero
-                imagen,
+            imagen,
+            categoriaId,
+            subcategoriaId
             };
             if (editing && producto?.id){
                 // mod edicion llama a updateProduct con el id  del producto
@@ -120,16 +132,47 @@ export default function AdminProductoForm() {
                 Alert.alert('Exito','Producto creado');
             }
             router.back(); // regresa a /admin/prodcutos despues de guardar
-        } catch {
-            // si 
-            Alert.alert('Error', 'No se puedo guardar el producto')
+        } catch (err) {
+            const msg = (err as Error).message || 'No se puedo guardar el producto';
+            Alert.alert('Error', msg);
         } finally {
-            setLoading(false); // habilita el boton nuevamente
+          setLoading(false); // habilita el boton nuevamente
         }
+      };
 
-        // ── RENDERIZADO ───────────────────────────────────────────────────────────
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
+      // ── RENDERIZADO ───────────────────────────────────────────────────────────
+      useEffect(()=>{
+        const load = async ()=>{
+          try{
+            const [catsRes, subsRes] = await Promise.all([
+              apiClient.get('/admin/categorias'),
+              apiClient.get('/admin/subcategorias')
+            ]);
+            const cats = catsRes.data?.data?.categorias || [];
+            const subs = subsRes.data?.data?.subcategorias || [];
+            setCategorias(Array.isArray(cats)? cats: []);
+            setSubcategorias(Array.isArray(subs)? subs: []);
+            // si estamos editando y producto tiene categoria/subcategoria preseleccionarlas
+            if(producto){
+              // @ts-ignore
+              setCategoriaId(producto.categoriaId || productCategoriaIdFromProducto(producto));
+              // @ts-ignore
+              setSubcategoriaId(producto.subcategoriaId || productSubcategoriaIdFromProducto(producto));
+            }
+          }catch(e){/* ignore*/}
+        };
+        load();
+      },[]);
+
+      // helper minimal to attempt reading nested relations if producto was passed with objects
+      const productCategoriaIdFromProducto = (p:any) => p.categoria?.id || undefined;
+      const productSubcategoriaIdFromProducto = (p:any) => p.subcategoria?.id || undefined;
+
+      return (
+        <ScrollView contentContainerStyle={styles.container}>
+          {/* Debug: mostrar modo y posible producto pasado */}
+          <Text style={{color:'#333', marginBottom:8}}>DEBUG: {editing ? 'modo edición' : 'modo creación'}</Text>
+          {producto ? <Text style={{color:'#666', marginBottom:8}}>Producto recibido: {JSON.stringify(producto)}</Text> : null}
 
       {/* ── CAMPO: Nombre ───────────────────────────────────────────────── */}
       <Text style={styles.label}>Nombre</Text>
@@ -175,6 +218,25 @@ export default function AdminProductoForm() {
         // Sin keyboardType especial: admite cualquier texto (URL o ruta).
       />
 
+      {/* ── CAMPO: Categoría / Subcategoría ────────────────────────────── */}
+      <Text style={styles.label}>Categoria</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom:8}}>
+        {categorias.map(cat=> (
+          <Pressable key={cat.id} onPress={()=>{ setCategoriaId(cat.id); setSubcategoriaId(undefined); }} style={[styles.chip, categoriaId===cat.id && styles.chipActive]}>
+            <Text style={categoriaId===cat.id? {color:'#fff'}: {}}>{cat.nombre}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      <Text style={styles.label}>Subcategoria</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom:8}}>
+        {subcategorias.filter(s=> !categoriaId || s.categoriaId===categoriaId).map(sub=> (
+          <Pressable key={sub.id} onPress={()=> setSubcategoriaId(sub.id)} style={[styles.chip, subcategoriaId===sub.id && styles.chipActive]}>
+            <Text style={subcategoriaId===sub.id? {color:'#fff'}: {}}>{sub.nombre}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
       {/* ── BOTÓN DE GUARDAR ────────────────────────────────────────────── */}
       {/* El título cambia según el modo: "Actualizar" si edita, "Crear" si es nuevo. */}
       {/* disabled evita envíos múltiples mientras loading=true. */}
@@ -191,12 +253,12 @@ export default function AdminProductoForm() {
 const styles = StyleSheet.create({
   // Contenedor del ScrollView: padding interior, fondo blanco.
   // flexGrow: 1 hace que ocupe toda la pantalla aunque el contenido sea corto.
-  container: { padding: 20, backgroundColor: '#fff', flexGrow: 1 },
+  container: { padding: 20, backgroundColor: '#f3f4f6', flexGrow: 1 },
   // Etiqueta de campo: negrita con margen superior para separar campos.
   label: { fontWeight: 'bold', marginTop: 10 },
   // Campo de texto: borde gris, esquinas ligeramente redondeadas, padding interior.
   input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 5, padding: 8, marginTop: 5, marginBottom: 10 },
+  chip:{paddingHorizontal:12, paddingVertical:8, borderRadius:20, borderWidth:1, borderColor:'#e5e7eb', marginRight:8, backgroundColor:'#fff'},
+  chipActive:{backgroundColor:'#06b6d4'}
 });
-
-}
 

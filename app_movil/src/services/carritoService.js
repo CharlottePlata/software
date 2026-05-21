@@ -64,8 +64,7 @@ const carritoService ={
         if (isAuthenticated){    
             const response = await apiClient.get('/cliente/carrito');
             const payload = response.data?.data || response.data || {};
-            const carrito = payload.carrito || {};
-            const items = carrito.items || carrito.items || [];
+            const items = payload.items || payload.carrito?.items || [];
             return summarize(items);
         }
 

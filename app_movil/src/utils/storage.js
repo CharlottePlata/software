@@ -36,12 +36,13 @@ export async function storageSetItem(key, value) {
 }
 
 // elimina varias claves a la vez 
-// siempre limpia primero el respaldo en memoria y luego intenta en asynstorage
-
-export async function storageRemoveItem(keys) {
-    //siempre limpiar memoryStore primero
+// siempre limpia primero el respaldo en memoria y luego intenta en asyncstorage
+export async function storageMultiRemove(keys) {
     keys.forEach((key) => memoryStore.delete(key));
     await safeCall(async () => {
-        await AsyncStorage.removeItem(keys);
+        await AsyncStorage.multiRemove(keys);
     }, null);
 }
+
+// alias de compatibilidad para codigo que ya usa el nombre anterior
+export const storageRemoveItem = storageMultiRemove;

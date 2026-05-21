@@ -14,7 +14,7 @@ const pedidoService = {
             metodoPago,
             notasAdicionales
         });
-        return response.data?.data?.pedidos || response.data?.pedidos ||[];
+        return response.data?.data?.pedido || response.data?.pedido || response.data || null;
     },
     //delvuelde el historial de pedidos del usuario autenticado
     getMisPedidos: async () => {
@@ -27,8 +27,7 @@ const pedidoService = {
     //obtiene el detalle completo de un pedido por id
     getPedidoById: async (id) => {
         const response = await apiClient.get(`/cliente/pedidos/${id}`);
-        const payload = response.data?.data?.pedido || response.data?.pedido || response.data;
-        return payload.pedido || {};
+        return response.data?.data?.pedido || response.data?.pedido || response.data || null;
     },
 
 

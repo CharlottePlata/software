@@ -88,7 +88,7 @@ export default function CarritoScreen(){
                     // boton cancelar cierra el dialogosin hacer nada
                     {text: 'Cancelar', style: 'cancel'},
                     // boton iniciar sesion lleva a pestaña cuentaexplore.tsx
-                    {text: 'iniciar Sesion', onPress: () => routerReplace('/explore')},
+                    { text: 'iniciar Sesion', onPress: () => routerReplace('/explore') },
                 ]
             );
             return; // sale de la funcion

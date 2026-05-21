@@ -84,12 +84,13 @@ export default function AdminProductosScreen() {
         setErrorMessage('');
             try{
                 const params: string[] = [];
-                if(search.trim()) params.push(`Buscar=${encodeURIComponent(search.trim())}`); 
-                params.push(`Pagina=${page}`); // pagina actual
+                if (search.trim()) params.push(`buscar=${encodeURIComponent(search.trim())}`);
+                params.push(`pagina=${page}`); // pagina actual
                 params.push(`limite=10`); // 10 productos por pagina
                 const url = `/admin/productos?${params.join('&')}`;
                 const res= await apiClient.get(url);
                 const productosData: Producto[] = res.data?.data?.productos || [];
+                setProductos(productosData);
                 setPagina(page);
                 setTotalPaginas(res.data?.data?.paginacion?.totalPaginas || 1);
             } catch (error: unknown) {

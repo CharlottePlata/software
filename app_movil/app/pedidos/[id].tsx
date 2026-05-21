@@ -112,9 +112,9 @@ type Detalle = {
     // efect de carga de pedido
     // se ejecuuta cuando id cambua en la ruta 
     useEffect(()=> {
-      if (pedidoId) {
+      if (!pedidoId) {
        setLoading(false);
-       setErrorMessage('no se carga el pedido');
+       setErrorMessage('No se recibió el id del pedido');
        return;
       }
       const loadPedido = async ()=>{
