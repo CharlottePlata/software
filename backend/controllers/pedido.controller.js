@@ -459,6 +459,74 @@ const cancelarPedido = async (req, res) => {
 };
 
 /**
+ * Confirmar un pedido - CLIENTE
+ *
+ * Ruta: PUT /api/cliente/pedidos/:id/confirmar
+ * Solo permite cambiar de 'pendiente' a 'confirmado' y valida que el pedido pertenezca al usuario.
+ */
+const confirmarPedido = async (req, res) => {
+  const { sequelize } = require('../config/database');
+  const t = await sequelize.transaction();
+
+  try {
+    const { id } = req.params;
+
+    const pedido = await Pedido.findOne({
+      where: {
+        id,
+        usuarioId: req.usuario.id
+      },
+      transaction: t
+    });
+
+    if (!pedido) {
+      await t.rollback();
+      return res.status(404).json({
+        success: false,
+        message: 'Pedido no encontrado'
+      });
+    }
+
+    if (pedido.estado !== 'pendiente') {
+      await t.rollback();
+      return res.status(400).json({
+        success: false,
+        message: `No se puede confirmar un pedido en estado '${pedido.estado}'`
+      });
+    }
+
+    pedido.estado = 'confirmado';
+    await pedido.save({ transaction: t });
+
+    await t.commit();
+
+    await pedido.reload({
+      include: [{
+        model: Usuario,
+        as: 'usuario',
+        attributes: ['id', 'nombre', 'email']
+      }]
+    });
+
+    res.json({
+      success: true,
+      message: 'Pedido confirmado exitosamente',
+      data: {
+        pedido
+      }
+    });
+  } catch (error) {
+    await t.rollback();
+    console.error('Error en confirmarPedido:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al confirmar pedido',
+      error: error.message
+    });
+  }
+};
+
+/**
  * Obtener todos los pedidos - ADMIN
  * 
  * Ruta: GET /api/admin/pedidos
@@ -669,6 +737,7 @@ module.exports = {
   getMisPedidos,             // GET  /api/cliente/pedidos - Mis pedidos
   getPedidoById,             // GET  /api/cliente/pedidos/:id - Detalle de un pedido
   cancelarPedido,            // PUT  /api/cliente/pedidos/:id/cancelar - Cancelar pedido
+  confirmarPedido,           // PUT /api/cliente/pedidos/:id/confirmar - Confirmar pedido
   
   // Funciones de ADMIN (rutas en routes/admin.routes.js)
   getAllPedidos,              // GET /api/admin/pedidos - Todos los pedidos

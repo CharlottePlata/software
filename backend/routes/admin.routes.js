@@ -103,18 +103,18 @@ router.get('/categorias/:id/stats', categoriaController.getEstadisticasCategoria
 // POST /api/admin/categorias → Crea una nueva categoría
 // Body esperado: { nombre: "Electrónica", descripcion: "Productos electrónicos" }
 // Controlador: crearCategoria → hace Categoria.create(req.body)
-router.post('/categorias', categoriaController.crearCategoria);
+router.post('/categorias', soloAdministrador, categoriaController.crearCategoria);
 
 // PUT /api/admin/categorias/:id → Actualiza una categoría existente
 // Body esperado: { nombre: "Nuevo nombre", descripcion: "Nueva descripción" }
 // Controlador: actualizarCategoria → busca por PK y hace .update()
-router.put('/categorias/:id', categoriaController.actualizarCategoria);
+router.put('/categorias/:id', soloAdministrador, categoriaController.actualizarCategoria);
 
 // PATCH /api/admin/categorias/:id/toggle → Activa o desactiva una categoría
 // PATCH se usa para actualizaciones parciales (solo cambia el campo 'activo')
 // Controlador: toggleCategoria → invierte el valor de 'activo' (true↔false)
 // Si desactiva, el hook afterUpdate en Categoria.js desactiva subcategorías y productos en cascada
-router.patch('/categorias/:id/toggle', categoriaController.toggleCategoria);
+router.patch('/categorias/:id/toggle', soloAdministrador, categoriaController.toggleCategoria);
 
 // DELETE /api/admin/categorias/:id → Elimina una categoría permanentemente
 // soloAdministrador → middleware adicional que SOLO permite acceso al rol 'administrador'
@@ -142,17 +142,17 @@ router.get('/subcategorias/:id/stats', subcategoriaController.getEstadisticasSub
 // POST /api/admin/subcategorias → Crea una nueva subcategoría
 // Body esperado: { nombre: "Celulares", descripcion: "...", categoriaId: 1 }
 // Controlador: crearSubcategoria → valida que la categoría padre exista y esté activa
-router.post('/subcategorias', subcategoriaController.crearSubcategoria);
+router.post('/subcategorias', soloAdministrador, subcategoriaController.crearSubcategoria);
 
 // PUT /api/admin/subcategorias/:id → Actualiza una subcategoría existente
 // Body esperado: { nombre: "Nuevo nombre", descripcion: "...", categoriaId: 2 }
 // Controlador: actualizarSubcategoria → busca por PK y hace .update()
-router.put('/subcategorias/:id', subcategoriaController.actualizarSubcategoria);
+router.put('/subcategorias/:id', soloAdministrador, subcategoriaController.actualizarSubcategoria);
 
 // PATCH /api/admin/subcategorias/:id/toggle → Activa o desactiva una subcategoría
 // Controlador: toggleSubcategoria → invierte el campo 'activo'
 // Si desactiva, el hook afterUpdate en Subcategoria.js desactiva los productos en cascada
-router.patch('/subcategorias/:id/toggle', subcategoriaController.toggleSubcategoria);
+router.patch('/subcategorias/:id/toggle', soloAdministrador, subcategoriaController.toggleSubcategoria);
 
 // DELETE /api/admin/subcategorias/:id → Elimina una subcategoría permanentemente
 // soloAdministrador → solo el administrador puede eliminar

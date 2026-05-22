@@ -33,8 +33,14 @@ const pedidoService = {
 
     //cancelar  un pedido siempre que el backend permite el cambio de estado
     cancelarPedido: async (id) => {
-        const response =await apiClient.post(`/cliente/pedidos/${id}/cancelar`);
+        const response = await apiClient.put(`/cliente/pedidos/${id}/cancelar`);
         return response.data;
+    },
+
+    // confirma un pedido del cliente cambiando el estado de pendiente a confirmado
+    confirmarPedido: async (id) => {
+        const response = await apiClient.put(`/cliente/pedidos/${id}/confirmar`);
+        return response.data?.data?.pedido || response.data?.pedido || response.data || null;
     }
 }
 

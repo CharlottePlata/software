@@ -5,7 +5,7 @@
  * Define la estructura de la tabla 'pedidos' en MySQL usando Sequelize ORM.
  * Cada fila representa un pedido/compra realizada por un usuario.
  * Un pedido tiene múltiples detalles (tabla detalle_pedidos) → cada detalle es un producto comprado.
- * Los pedidos pasan por estados: pendiente → pagado → enviado → entregado (o cancelado).
+ * Los pedidos pasan por estados: pendiente → confirmado → pagado → enviado → entregado (o cancelado).
  * Las fechas de pago, envío y entrega se registran automáticamente vía hooks.
  * REGLA DE NEGOCIO: Los pedidos NO se pueden eliminar, solo cancelar.
  */
@@ -69,11 +69,12 @@ const Pedido = sequelize.define('Pedido', {
   },
 
   // Columna 'estado' → Estado actual del pedido (flujo de vida del pedido)
-  // Flujo normal: pendiente → pagado → enviado → entregado
-  // Flujo alterno: pendiente/pagado → cancelado
+  // Flujo normal: pendiente → confirmado → pagado → enviado → entregado
+  // Flujo alterno: pendiente/confirmado/pagado → cancelado
   estado: {
     type: DataTypes.ENUM(              // ENUM en MySQL → solo permite estos valores exactos
-      'pendiente',                     // Recién creado, esperando pago
+      'pendiente',                     // Recién creado, esperando confirmación
+      'confirmado',                    // El cliente confirmó el pedido
       'pagado',                        // Ya pagó, se está preparando
       'enviado',                       // Ya se envió al cliente
       'entregado',                     // El cliente ya lo recibió
@@ -83,7 +84,7 @@ const Pedido = sequelize.define('Pedido', {
     defaultValue: 'pendiente',         // Todo pedido nuevo empieza como 'pendiente'
     validate: {
       isIn: {                          // Doble validación: a nivel de Sequelize
-        args: [['pendiente', 'pagado', 'enviado', 'entregado', 'cancelado']],
+        args: [['pendiente', 'confirmado', 'pagado', 'enviado', 'entregado', 'cancelado']],
         msg: 'Estado inválido'
       }
     }
@@ -210,12 +211,12 @@ const Pedido = sequelize.define('Pedido', {
 
 /**
  * cambiarEstado() → Cambia el estado del pedido después de validar
- * @param {string} nuevoEstado - Nuevo estado ('pendiente', 'pagado', 'enviado', 'entregado', 'cancelado')
+ * @param {string} nuevoEstado - Nuevo estado ('pendiente', 'confirmado', 'pagado', 'enviado', 'entregado', 'cancelado')
  * @returns {Promise<Pedido>} Pedido actualizado (el hook afterUpdate registra las fechas)
  */
 Pedido.prototype.cambiarEstado = async function(nuevoEstado) {
   // Lista de estados válidos permitidos
-  const estadosValidos = ['pendiente', 'pagado', 'enviado', 'entregado', 'cancelado'];
+  const estadosValidos = ['pendiente', 'confirmado', 'pagado', 'enviado', 'entregado', 'cancelado'];
   
   // Valida que el nuevo estado esté en la lista
   if (!estadosValidos.includes(nuevoEstado)) {
@@ -228,13 +229,13 @@ Pedido.prototype.cambiarEstado = async function(nuevoEstado) {
 
 /**
  * puedeSerCancelado() → Verifica si el pedido se puede cancelar
- * Solo se cancelan pedidos en estado 'pendiente' o 'pagado'.
+ * Solo se cancelan pedidos en estado 'pendiente', 'confirmado' o 'pagado'.
  * Si ya fue enviado o entregado, NO se puede cancelar.
  * @returns {boolean} true si se puede cancelar, false si no
  */
 Pedido.prototype.puedeSerCancelado = function() {
   // includes() verifica si this.estado está en el array
-  return ['pendiente', 'pagado'].includes(this.estado);
+  return ['pendiente', 'confirmado', 'pagado'].includes(this.estado);
 };
 
 /**

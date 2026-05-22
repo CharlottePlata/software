@@ -108,7 +108,6 @@ type Detalle = {
     const[loading, setLoading] = useState<boolean>(true);
     const[errorMessage, setErrorMessage] = useState('');
     const[isCancelling, setIsCancelling] = useState(false);
-
     // efect de carga de pedido
     // se ejecuuta cuando id cambua en la ruta 
     useEffect(()=> {
@@ -183,6 +182,8 @@ type Detalle = {
     }
   };
 
+  // (Confirm action removed from client UI)
+
   // ── RENDERIZADO ───────────────────────────────────────────────────────────
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -241,6 +242,8 @@ type Detalle = {
 
       {/* Botones de acción y navegación */}
       <View style={styles.actionsRow}>
+        {/* Confirm button removed from client UI */}
+
         {/* Solo se permite cancelar cuando el estado es pendiente */}
         {isPendiente ? (
           <Pressable
@@ -313,6 +316,9 @@ const styles = StyleSheet.create({
 
   error: { color: '#b93a32' },
   actionsRow: { flexDirection: 'column', gap: 8 },
+
+  // Botón de confirmar pedido.
+  // (Confirm button removed)
 
   // Botón de cancelar pedido.
   cancelButton: {

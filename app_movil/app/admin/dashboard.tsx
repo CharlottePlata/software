@@ -137,7 +137,6 @@ export default function AdminDashboardScreen(){
         <View style={styles.sectionBody}>
           <Pressable style={[styles.actionBtn,{borderColor:'#6366f1'}]} onPress={()=> push('/admin/productos')}><Ionicons name="add-circle-outline" size={18} color="#6366f1" /><Text style={[styles.actionText,{color:'#6366f1'}]}>Agregar Producto</Text></Pressable>
           <Pressable style={[styles.actionBtn,{borderColor:'#10b981'}]} onPress={()=> push('/admin/categorias')}><Ionicons name="add-circle-outline" size={18} color="#10b981" /><Text style={[styles.actionText,{color:'#10b981'}]}>Agregar Categoría</Text></Pressable>
-          <Pressable style={[styles.actionBtn,{borderColor:'#06b6d4'}]} onPress={()=> push('/admin/subcategorias')}><Ionicons name="add-circle-outline" size={18} color="#06b6d4" /><Text style={[styles.actionText,{color:'#06b6d4'}]}>Agregar Subcategoría</Text></Pressable>
           <Pressable style={[styles.actionBtn,{borderColor:'#06b6d4'}]} onPress={()=> push('/admin/pedidos')}><Ionicons name="list-outline" size={18} color="#06b6d4" /><Text style={[styles.actionText,{color:'#06b6d4'}]}>Gestionar Pedidos</Text></Pressable>
           <Pressable style={[styles.actionBtn,{borderColor:'#6b7280'}]} onPress={()=> push('/')}><Ionicons name="storefront-outline" size={18} color="#6b7280" /><Text style={[styles.actionText,{color:'#6b7280'}]}>Visitar Tienda</Text></Pressable>
         </View>

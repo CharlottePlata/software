@@ -173,6 +173,11 @@ router.get('/cliente/pedidos/:id', verificarAuth, pedidoController.getPedidoById
 // Al cancelar, restaura el stock de los productos que estaban en el pedido
 router.put('/cliente/pedidos/:id/cancelar', verificarAuth, pedidoController.cancelarPedido);
 
+// PUT /api/cliente/pedidos/:id/confirmar → Confirma un pedido del usuario
+// verificarAuth → verifica token
+// Controlador: confirmarPedido → solo permite pasar de 'pendiente' a 'confirmado'
+router.put('/cliente/pedidos/:id/confirmar', verificarAuth, pedidoController.confirmarPedido);
+
 // ==========================================
 // EXPORTAR ROUTER
 // ==========================================
