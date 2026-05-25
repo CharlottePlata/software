@@ -56,15 +56,8 @@ export default function AdminCategoriasScreen(){
   };
 
   const handleDelete = (id?: number)=>{
-    if (!isAdmin) return Alert.alert('Acceso restringido', 'Solo el administrador puede eliminar categorías');
     if(!id) return;
-    Alert.alert('Eliminar','¿Seguro que desea eliminar esta categoría?',[
-      {text:'Cancelar', style:'cancel'},
-      {text:'Eliminar', style:'destructive', onPress: async ()=>{
-        try{ await apiClient.delete(`/admin/categorias/${id}`); fetchCategorias(); }
-        catch(err){ Alert.alert('Error', (err as Error).message || 'No se pudo eliminar'); }
-      }}
-    ]);
+    Alert.alert('Acceso restringido', 'No tiene permitido eliminar');
   };
 
   const renderItem = ({item}:{item:Categoria}) => (

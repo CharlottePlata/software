@@ -31,7 +31,7 @@ import {
 import {router, useLocalSearchParams} from "expo-router"; // navegacion y parametros de rute
 import { ThemedText } from '../../components/themed-text';
 import apiClient  from '../../src/api/apiClient';
-import { activarProducto,desactivarProducto,deleteProduct} from '../../src/services/adminService';
+import { activarProducto,desactivarProducto } from '../../src/services/adminService';
 import { useAuth } from '../../src/context/AuthContext';
 /**
  * Tipo de producto
@@ -207,22 +207,7 @@ export default function AdminProductosScreen() {
                 <Pressable
                   style={[styles.actionBtn, { backgroundColor: '#b93a32' }]}
                   onPress={() => {
-                    // Alert con dos opciones: Cancelar (seguro) o Eliminar (destructivo).
-                    Alert.alert('Eliminar producto', 'Estas seguro de eliminar este producto?', [
-                      { text: 'Cancelar', style: 'cancel' },
-                      {
-                        text: 'Eliminar',
-                        style: 'destructive', // En iOS pone el texto en rojo automáticamente.
-                        onPress: async () => {
-                          try {
-                            await deleteProduct(item.id || item.id); // DELETE al backend.
-                            fetchProductos(pagina, busqueda);          // Recarga la lista.
-                          } catch {
-                            Alert.alert('Error', 'No se pudo eliminar');
-                          }
-                        },
-                      },
-                    ]);
+                    Alert.alert('Acceso restringido', 'No tiene permitido eliminar');
                   }}
                 >
                   <ThemedText style={styles.actionBtnText}>Eliminar</ThemedText>

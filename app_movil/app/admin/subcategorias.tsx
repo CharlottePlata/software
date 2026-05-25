@@ -57,7 +57,7 @@ export default function AdminSubcategoriasScreen(){
 
   const handleToggle = async (id?: number)=>{ if(!isAdmin) return Alert.alert('Acceso restringido', 'Solo el administrador puede activar o desactivar subcategorías'); if(!id) return; try{ await apiClient.patch(`/admin/subcategorias/${id}/toggle`); fetchAll(); }catch(err){ Alert.alert('Error', (err as Error).message || 'No se pudo cambiar estado'); }};
 
-  const handleDelete = (id?: number)=>{ if(!isAdmin) return Alert.alert('Acceso restringido', 'Solo el administrador puede eliminar subcategorías'); if(!id) return; Alert.alert('Eliminar','¿Seguro?',[ {text:'Cancelar', style:'cancel'},{text:'Eliminar', style:'destructive', onPress: async ()=>{ try{ await apiClient.delete(`/admin/subcategorias/${id}`); fetchAll(); }catch(err){ Alert.alert('Error', (err as Error).message || 'No se pudo eliminar'); }}} ]); };
+  const handleDelete = (id?: number)=>{ if(!id) return; Alert.alert('Acceso restringido', 'No tiene permitido eliminar'); };
 
   const renderItem = ({item}:{item:Subcategoria}) => (
     <View style={styles.row}>

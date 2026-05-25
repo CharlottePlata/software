@@ -54,16 +54,18 @@ export default function AdminDashboardScreen(){
 
         const catsData = cats.data?.data?.categorias || [];
         const subsData = subs.data?.data?.subcategorias || [];
-        const ordStats = orders.data?.data?.stats || {};
+        const ordersData = orders.data?.data || {};
+        const pedidosPorEstado = Array.isArray(ordersData.pedidosPorEstado) ? ordersData.pedidosPorEstado : [];
+        const pedidosPendientes = ordersData.pedidosPendientes ?? ordersData.pendientes ?? pedidosPorEstado.find((item: any) => item?.estado === 'pendiente')?.cantidad ?? 0;
 
         setStats({
           categorias: Array.isArray(catsData) ? catsData.length : 0,
           subcategorias: Array.isArray(subsData) ? subsData.length : 0,
           productos: prods.data?.data?.paginacion?.total || 0,
           usuarios: userStats?.data?.data?.total || userStats?.data?.data?.stats?.totalUsuarios || 0,
-          pedidos: ordStats.totalPedidos || 0,
-          pendientes: ordStats.pendientes || 0,
-          ventas: ordStats.ventasTotales || 0,
+          pedidos: ordersData.totalPedidos || 0,
+          pendientes: pedidosPendientes,
+          ventas: ordersData.ventasTotales || 0,
         });
       }catch(e){
         // ignore

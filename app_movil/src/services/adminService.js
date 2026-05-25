@@ -88,12 +88,12 @@ export async function deleteProduct(id) {
 
 // Marca activado el producto
 export async function activarProducto(id) {
-    const res = await api.patch(`/admin/productos/${id}/activar`);
+    const res = await api.patch(`/admin/productos/${id}/toggle`);
     return res.data;
 }
 
 // marca desactivado el producto
 export async function desactivarProducto(id) {
-    const res = await api.patch(`/admin/productos/${id}/desactivar`);
+    const res = await api.patch(`/admin/productos/${id}/toggle`);
     return res.data;
 }

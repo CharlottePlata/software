@@ -32,6 +32,8 @@ type CarritoCtx ={
     totalItems: number;
     // loading true mientras el contexto carga los datos iniciales
     loading: boolean;
+    // fuerza la recarga del carrito desde la fuente (backend o local)
+    refreshCarrito: () => Promise<void>;
     //cambiar cantidad actualiza la cantidad de unproducto 
     cambiarCantidad: (id:string, cantidad:number) => Promise<void>;
     //eliminar item eliminar unproducto del carrito
@@ -60,7 +62,7 @@ export default function CarritoScreen(){
     
     //Obtiene del contexto del carrito los datos y funciones necesarias
     // se usa as CArritoCtx porque el contexto esta en js y typescript no interfiere en tipos
-    const {items, total, loading, cambiarCantidad, eliminarItem, vaciarCarrito} = useCarrito () as CarritoCtx;
+    const {items, total, loading, cambiarCantidad, eliminarItem, vaciarCarrito, refreshCarrito} = useCarrito () as CarritoCtx;
 
     // pantalla de carga 
     // si el carrito aun esta cargando por ejemplo recuperando datos guardados
@@ -124,6 +126,16 @@ export default function CarritoScreen(){
             <View style={styles.header}>
         <Ionicons name="cart" size={28} color="#6366f1" />
         <Text style={styles.headerTitle}>Mi Carrito</Text>
+              <Pressable style={{marginLeft: 'auto'}} onPress={async () => {
+                try {
+                  await refreshCarrito();
+                  Alert.alert('Listo', 'Carrito actualizado');
+                } catch (e) {
+                  Alert.alert('Error', 'No se pudo actualizar el carrito');
+                }
+              }}>
+                <Ionicons name="refresh" size={22} color="#6366f1" />
+              </Pressable>
       </View>
 
       {/* ── BANNER INFORMATIVO (solo para usuarios NO autenticados) ─────── */}
